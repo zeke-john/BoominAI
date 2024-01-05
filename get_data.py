@@ -73,7 +73,7 @@ def process_audio(file_path, output_dir, segment_length=30):
 
 # Directory setup
 output_directory = 'output'
-samples_directory = '/Users/zeke/Documents/Github/WaysteAI/data/training_data'
+samples_directory = '/Users/zeke/Documents/Github/BoominAI/smaller'
 # samples_directory = '/Users/zeke/Documents/Github/WaysteAI/raw'
 
 # Check if the output directory exists, if not, create it

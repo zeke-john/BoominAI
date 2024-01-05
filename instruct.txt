@@ -6,146 +6,53 @@
 
 !python3 -m pip install -U git+https://github.com/facebookresearch/audiocraft#egg=audiocraft
 
-!pip install wandb pydu
+!pip install wandb pydu boto3
 
 !export PYTHONIOENCODING=utf-8
 
-!python3 musicgenTrainer/run.py --dataset_path output
+import boto3
+import os
+from concurrent.futures import ThreadPoolExecutor
+import concurrent.futures
+
+ACCESS_ID = 'AKIA2J37CALYF4QESNBO'
+ACCESS_KEY = 'ixSMQYkTYr9450PCeNYfVhKBhJLTSSNtNyKr9RmZ'
+
+s3 = boto3.client('s3', aws_access_key_id=ACCESS_ID,
+         aws_secret_access_key= ACCESS_KEY)
+
+bucket_name = 'westai'
+prefix = 'smaller'  # Optional: If you want to download objects from a specific prefix
+local_directory = 'local_directory'  # Replace with your local directory path
+
+def download_file(bucket, object_name, local_path):
+    s3.download_file(bucket, object_name, local_path)
+
+def list_and_download_objects(bucket, prefix, local_directory):
+    kwargs = {'Bucket': bucket, 'Prefix': prefix}
+
+    objects = []
+    while True:
+        resp = s3.list_objects_v2(**kwargs)
+        for obj in resp.get('Contents', []):
+            objects.append(obj['Key'])
+        if 'NextContinuationToken' not in resp:
+            break
+        kwargs['ContinuationToken'] = resp['NextContinuationToken']
+
+    with ThreadPoolExecutor(max_workers=50) as executor:  # Adjust max_workers as needed
+        future_to_key = {executor.submit(download_file, bucket, key, os.path.join(local_directory, key)): key for key in objects}
+        for future in concurrent.futures.as_completed(future_to_key):
+            key = future_to_key[future]
+            try:
+                future.result()
+            except Exception as exc:
+                print(f'{key} generated an exception: {exc}')
+
+list_and_download_objects(bucket_name, prefix, local_directory)
+
+print('Done, now training')
+
+!python3 WaysteAI/musicgenTrainer/run.py --dataset_path local_directory/output
 
 
-# ERROR
-# /opt/conda/lib/python3.10/site-packages/audiocraft/models/musicgen.py:127: UserWarning: MusicGen pretrained model relying on deprecated checkpoint mapping. Please use full pre-trained id instead: facebook/musicgen-large
-#   warnings.warn(
-# /opt/conda/lib/python3.10/site-packages/torch/nn/utils/weight_norm.py:30: UserWarning: torch.nn.utils.weight_norm is deprecated in favor of torch.nn.utils.parametrizations.weight_norm.
-#   warnings.warn("torch.nn.utils.weight_norm is deprecated in favor of torch.nn.utils.parametrizations.weight_norm.")
-# Tuning everything
-# Traceback (most recent call last):
-#   File "/home/ubuntu/WaysteAI/WaysteAI/musicgenTrainer/run.py", line 21, in <module>
-#     train(
-#   File "/home/ubuntu/WaysteAI/WaysteAI/musicgenTrainer/train.py", line 200, in train
-#     lm_output = model.lm.compute_predictions(
-#   File "/opt/conda/lib/python3.10/site-packages/audiocraft/models/lm.py", line 297, in compute_predictions
-#     logits = model(sequence_codes, conditions, condition_tensors)  # [B, K, S, card]
-#   File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-#     return self._call_impl(*args, **kwargs)
-#   File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-#     return forward_call(*args, **kwargs)
-#   File "/opt/conda/lib/python3.10/site-packages/audiocraft/models/lm.py", line 253, in forward
-#     out = self.transformer(input_, cross_attention_src=cross_attention_input)
-#   File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-#     return self._call_impl(*args, **kwargs)
-#   File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-#     return forward_call(*args, **kwargs)
-#   File "/opt/conda/lib/python3.10/site-packages/audiocraft/modules/transformer.py", line 698, in forward
-#     x = self._apply_layer(layer, x, *args, **kwargs)
-#   File "/opt/conda/lib/python3.10/site-packages/audiocraft/modules/transformer.py", line 655, in _apply_layer
-#     return layer(*args, **kwargs)
-#   File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-#     return self._call_impl(*args, **kwargs)
-#   File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-#     return forward_call(*args, **kwargs)
-#   File "/opt/conda/lib/python3.10/site-packages/audiocraft/modules/transformer.py", line 550, in forward
-#     self._sa_block(self.norm1(x), src_mask, src_key_padding_mask))
-#   File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/transformer.py", line 715, in _sa_block
-#     x = self.self_attn(x, x, x,
-#   File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-#     return self._call_impl(*args, **kwargs)
-#   File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-#     return forward_call(*args, **kwargs)
-#   File "/opt/conda/lib/python3.10/site-packages/audiocraft/modules/transformer.py", line 365, in forward
-#     projected = nn.functional.linear(query, self.in_proj_weight, self.in_proj_bias)
-# torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 72.00 MiB. GPU 0 has a total capacty of 14.58 GiB of which 27.56 MiB is free. Including non-PyTorch memory, this process has 14.55 GiB memory in use. Of the allocated memory 13.75 GiB is allocated by PyTorch, and 682.30 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
-
-
-
-
-ON SAGEMAKER:
-|===========================================================================|
-|                  PyTorch CUDA memory summary, device ID 0                 |
-|---------------------------------------------------------------------------|
-|            CUDA OOMs: 0            |        cudaMalloc retries: 0         |
-|===========================================================================|
-|        Metric         | Cur Usage  | Peak Usage | Tot Alloc  | Tot Freed  |
-|---------------------------------------------------------------------------|
-| Allocated memory      |      0 B   |      0 B   |      0 B   |      0 B   |
-|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
-|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
-|---------------------------------------------------------------------------|
-| Active memory         |      0 B   |      0 B   |      0 B   |      0 B   |
-|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
-|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
-|---------------------------------------------------------------------------|
-| Requested memory      |      0 B   |      0 B   |      0 B   |      0 B   |
-|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
-|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
-|---------------------------------------------------------------------------|
-| GPU reserved memory   |      0 B   |      0 B   |      0 B   |      0 B   |
-|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
-|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
-|---------------------------------------------------------------------------|
-| Non-releasable memory |      0 B   |      0 B   |      0 B   |      0 B   |
-|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
-|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
-|---------------------------------------------------------------------------|
-| Allocations           |       0    |       0    |       0    |       0    |
-|       from large pool |       0    |       0    |       0    |       0    |
-|       from small pool |       0    |       0    |       0    |       0    |
-|---------------------------------------------------------------------------|
-| Active allocs         |       0    |       0    |       0    |       0    |
-|       from large pool |       0    |       0    |       0    |       0    |
-|       from small pool |       0    |       0    |       0    |       0    |
-|---------------------------------------------------------------------------|
-| GPU reserved segments |       0    |       0    |       0    |       0    |
-|       from large pool |       0    |       0    |       0    |       0    |
-|       from small pool |       0    |       0    |       0    |       0    |
-|---------------------------------------------------------------------------|
-| Non-releasable allocs |       0    |       0    |       0    |       0    |
-|       from large pool |       0    |       0    |       0    |       0    |
-|       from small pool |       0    |       0    |       0    |       0    |
-|---------------------------------------------------------------------------|
-| Oversize allocations  |       0    |       0    |       0    |       0    |
-|---------------------------------------------------------------------------|
-| Oversize GPU segments |       0    |       0    |       0    |       0    |
-|===========================================================================|
-
-/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/audiocraft/models/musicgen.py:127: UserWarning: MusicGen pretrained model relying on deprecated checkpoint mapping. Please use full pre-trained id instead: facebook/musicgen-large
-  warnings.warn(
-/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/torch/nn/utils/weight_norm.py:30: UserWarning: torch.nn.utils.weight_norm is deprecated in favor of torch.nn.utils.parametrizations.weight_norm.
-  warnings.warn("torch.nn.utils.weight_norm is deprecated in favor of torch.nn.utils.parametrizations.weight_norm.")
-Tuning everything
-Traceback (most recent call last):
-  File "/home/ec2-user/WaysteAI/musicgenTrainer/run.py", line 21, in <module>
-    train(
-  File "/home/ec2-user/WaysteAI/musicgenTrainer/train.py", line 211, in train
-    lm_output = model.lm.compute_predictions(
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/audiocraft/models/lm.py", line 297, in compute_predictions
-    logits = model(sequence_codes, conditions, condition_tensors)  # [B, K, S, card]
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/audiocraft/models/lm.py", line 253, in forward
-    out = self.transformer(input_, cross_attention_src=cross_attention_input)
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/audiocraft/modules/transformer.py", line 698, in forward
-    x = self._apply_layer(layer, x, *args, **kwargs)
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/audiocraft/modules/transformer.py", line 655, in _apply_layer
-    return layer(*args, **kwargs)
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/audiocraft/modules/transformer.py", line 553, in forward
-    self._cross_attention_block(
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/audiocraft/modules/transformer.py", line 536, in _cross_attention_block
-    x = self.cross_attention(
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/ec2-user/anaconda3/envs/JupyterSystemEnv/lib/python3.10/site-packages/audiocraft/modules/transformer.py", line 429, in forward
-    x = x.to(dtype)
-torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 12.00 MiB. GPU 0 has a total capacty of 14.75 GiB of which 11.06 MiB is free. Including non-PyTorch memory, this process has 14.73 GiB memory in use. Of the allocated memory 14.33 GiB is allocated by PyTorch, and 278.48 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
