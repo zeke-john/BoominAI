@@ -40,29 +40,25 @@ bucket_name = 'westai'
 prefix = 'smaller'  # Optional: If you want to download objects from a specific prefix
 local_directory = 'local_directory'  # Replace with your local directory path
 
-def download_file(bucket, object_name, local_path):
-    s3.download_file(bucket, object_name, local_path)
+def upload_files(path, bucket_name, s3_folder):
+    session = boto3.Session(
+        aws_access_key_id=ACCESS_ID,
+        aws_secret_access_key=ACCESS_KEY,
+    )
 
-def list_and_download_objects(bucket, prefix, local_directory):
-    kwargs = {'Bucket': bucket, 'Prefix': prefix}
+    s3 = session.resource('s3')
+    bucket = s3.Bucket(bucket_name)
 
-    objects = []
-    while True:
-        resp = s3.list_objects_v2(**kwargs)
-        for obj in resp.get('Contents', []):
-            objects.append(obj['Key'])
-        if 'NextContinuationToken' not in resp:
-            break
-        kwargs['ContinuationToken'] = resp['NextContinuationToken']
+    files_to_upload = []
+    
+    for root, dirs, files in os.walk(path):
+        files_to_upload.extend(sorted([os.path.join(root, file) for file in files]))
 
-    with ThreadPoolExecutor(max_workers=50) as executor:  # Adjust max_workers as needed
-        future_to_key = {executor.submit(download_file, bucket, key, os.path.join(local_directory, key)): key for key in objects}
-        for future in concurrent.futures.as_completed(future_to_key):
-            key = future_to_key[future]
-            try:
-                future.result()
-            except Exception as exc:
-                print(f'{key} generated an exception: {exc}')
+    for full_path in files_to_upload:
+        with open(full_path, 'rb') as data:
+            s3_path = os.path.join(s3_folder, os.path.relpath(full_path, path))
+            print(s3_path)
+            bucket.put_object(Key=s3_path, Body=data)
 
-list_and_download_objects(bucket_name, prefix, local_directory)
-
+if __name__ == "__main__":
+    upload_files('/Users/zeke/Documents/Github/BoominAI/output', 'westai', 'smaller')

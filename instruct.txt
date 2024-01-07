@@ -1,8 +1,8 @@
 !nvidia-smi
 
-!git clone https://github.com/zeke-john/WaysteAI.git
+!git clone https://github.com/zeke-john/BoominAI.git
 
-!cd WaysteAI
+!cd BoominAI
 
 !python3 -m pip install -U git+https://github.com/facebookresearch/audiocraft#egg=audiocraft
 
@@ -53,6 +53,6 @@ list_and_download_objects(bucket_name, prefix, local_directory)
 
 print('Done, now training')
 
-!python3 WaysteAI/musicgenTrainer/run.py --dataset_path local_directory/output
+!python3 BoominAI/musicgenTrainer/run.py --dataset_path local_directory/output
 
 

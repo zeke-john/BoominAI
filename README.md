@@ -70,8 +70,6 @@ files = os.listdir(source_directory)
 
 keywords = ['kanye', 'drake', '21 savage']
 
-# Loop through files and copy those containing the keywords to the destination
-
 for file_name in files:
 for keyword in keywords:
 if keyword.lower() in file_name.lower():
