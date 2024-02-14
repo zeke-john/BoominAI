@@ -15,8 +15,8 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 import concurrent.futures
 
-ACCESS_ID = 'AKIA2J37CALYF4QESNBO'
-ACCESS_KEY = 'ixSMQYkTYr9450PCeNYfVhKBhJLTSSNtNyKr9RmZ'
+ACCESS_ID = 'AKIA2J37CALYGP54WYS7'
+ACCESS_KEY = 'L4FpDNOvrjrgTCwGr8pzyo07LDxJ9Jog3z0sdVnq'
 
 s3 = boto3.client('s3', aws_access_key_id=ACCESS_ID,
          aws_secret_access_key= ACCESS_KEY)
@@ -26,6 +26,7 @@ prefix = 'smaller'  # Optional: If you want to download objects from a specific 
 local_directory = 'local_directory'  # Replace with your local directory path
 
 def download_file(bucket, object_name, local_path):
+    print(object_name)
     s3.download_file(bucket, object_name, local_path)
 
 def list_and_download_objects(bucket, prefix, local_directory):
@@ -50,6 +51,8 @@ def list_and_download_objects(bucket, prefix, local_directory):
                 print(f'{key} generated an exception: {exc}')
 
 list_and_download_objects(bucket_name, prefix, local_directory)
+
+!python3 get_data.py
 
 print('Done, now training')
 
