@@ -55,4 +55,4 @@ list_and_download_objects(bucket_name, prefix, local_directory)
 
 print('Done, now training')
 
-!python3 BoominAI/musicgenTrainer/run.py --dataset_path local_directory/output
+!python3 BoominAI/musicgenTrainer/run.py --dataset_path output
