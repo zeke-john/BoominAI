@@ -5,9 +5,7 @@
 !cd BoominAI
 
 !python3 -m pip install -U git+https://github.com/facebookresearch/audiocraft.git@e1f2b18f89210ab5a71bc0d31d156d84a8280d9f#egg=audiocraft
-
 !pip install wandb pydu boto3
-
 !export PYTHONIOENCODING=utf-8
 
 import boto3
@@ -52,7 +50,8 @@ def list_and_download_objects(bucket, prefix, local_directory):
 
 list_and_download_objects(bucket_name, prefix, local_directory)
 
-!python3 get_data.py
+!apt-get update && apt-get install -y ffmpeg
+!python3 BoominAI/get_data.py
 
 print('Done, now training')
 

@@ -68,7 +68,8 @@ def process_audio(file_path, output_dir, segment_length=30):
 
 # Directory setup
 output_directory = 'output'
-samples_directory = 'workspace/local_directory/smaller'
+samples_directory = 'local_directory/smaller'
+# samples_directory = '/Users/zeke/Documents/Github/WaysteAI/raw'
 
 # Check if the output directory exists, if not, create it
 if not os.path.exists(output_directory):
@@ -78,7 +79,8 @@ if not os.path.exists(output_directory):
 for file_name in os.listdir(samples_directory):
     if file_name.endswith('.wav') or file_name.endswith('.mp3'):
         file_path = os.path.join(samples_directory, file_name)
-        process_audio(file_path, output_directory, segment_length=30)
+        if "type beat" in file_name:
+            process_audio(file_path, output_directory, segment_length=30)
 
 # Iterate through the files in the directory
 for file_name in os.listdir(output_directory):
