@@ -4,7 +4,7 @@
 
 !cd BoominAI
 
-!python3 -m pip install -U git+https://github.com/facebookresearch/audiocraft#egg=audiocraft
+!python3 -m pip install -U git+https://github.com/facebookresearch/audiocraft.git@e1f2b18f89210ab5a71bc0d31d156d84a8280d9f#egg=audiocraft
 
 !pip install wandb pydu boto3
 
@@ -21,7 +21,7 @@ ACCESS_KEY = 'ixSMQYkTYr9450PCeNYfVhKBhJLTSSNtNyKr9RmZ'
 s3 = boto3.client('s3', aws_access_key_id=ACCESS_ID,
          aws_secret_access_key= ACCESS_KEY)
 
-bucket_name = 'westai'
+bucket_name = 'traindatazeke'
 prefix = 'smaller'  # Optional: If you want to download objects from a specific prefix
 local_directory = 'local_directory'  # Replace with your local directory path
 
@@ -54,5 +54,3 @@ list_and_download_objects(bucket_name, prefix, local_directory)
 print('Done, now training')
 
 !python3 BoominAI/musicgenTrainer/run.py --dataset_path local_directory/output
-
-

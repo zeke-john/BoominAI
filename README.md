@@ -14,8 +14,7 @@ arch -x86_64 brew ...
 
 CREATE A FOLDER WITH THE ARTIST'S NAME
 
-yt-dlp --extract-audio --audio-format mp3 -o '/Users/zeke/Documents/Github/AI-Beatz/{NAME OF ARTIST AKA FOLDER NAME}/%(title)s.%(ext)s' "https://www.youtube.com/@THEIR_YOUTUBE_HANDLE/videos"
-data/training_data
+yt-dlp --extract-audio --audio-format mp3 -o '/Users/zeke/Documents/Github/BoominAI/training_data_new/%(title)s.%(ext)s' "https://www.youtube.com/@Dillygotitbumpin/videos"
 
 # check number of files and size of s3 bucket
 
@@ -79,3 +78,7 @@ shutil.copy2(source_path, destination_path)
 print(f"Copied {file_name} to {destination_directory}")
 
 print("Copy process complete.")
+
+# push docker img
+
+DOCKER_BUILDKIT=1 docker buildx build --push -t 11080208/newtest:latest . --platform linux/amd64 --no-cache

@@ -308,3 +308,7 @@ cython_debug/
 *.zip
 /local_directory
 /smaller
+/models
+/stuff
+/data
+/serverless

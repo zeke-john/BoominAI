@@ -4,16 +4,11 @@ import librosa
 import re
 import random
 
-import re
-print('e')
-
 def remove_special_characters(input_string):
     # Define a regular expression pattern to match special characters (excluding ":" and numbers)
     pattern = re.compile('[^a-zA-Z ]')
-    
     # Use the sub() method to replace matched characters with an empty string
     result_string = re.sub(pattern, '', input_string)
-    
     return result_string
 
 def process_audio(file_path, output_dir, segment_length=30):
@@ -25,9 +20,9 @@ def process_audio(file_path, output_dir, segment_length=30):
 
     file_name = remove_special_characters(file_name.lower().capitalize())
     file_name = file_name.lower()
-    file_name = f'''{file_name.replace("free", "").replace("sold", "").replace("free for profit", "").replace("not sale", "").replace("no tags", "").replace("dark", "")}'''
+    file_name = f'''{file_name.replace("free", "").replace("sold", "").replace("free for profit", "").replace("not sale", "").replace("no tags", "").replace("dark", "").replace("＊", "").replace("not4sale", "")}'''
     file_name = " ".join(file_name.split())
-    file_name = file_name.replace("type beat", "type rap beat^ ")
+    file_name = file_name.replace("type beat", "type beat^ ")
     file_name = " ".join(file_name.split())
     delimiter = "^"
 
@@ -36,7 +31,7 @@ def process_audio(file_path, output_dir, segment_length=30):
 
     # Take the first part, which is the text before the delimiter
     file_name = split_parts[0]
-    file_name = f"{file_name} (beat {random.randint(1, 100000)})"
+    file_name = f"{file_name} (beat {random.randint(1, 999999)})"
     file_name = file_name.lower().capitalize()
     print(file_name)
     # Convert segment length to milliseconds
@@ -69,11 +64,11 @@ def process_audio(file_path, output_dir, segment_length=30):
 
         # Save the caption
         with open(os.path.join(output_dir, f'{file_name}_segment_{i:03d}.txt'), 'w') as f:
-            f.write(str(file_name))
+            f.write(str(split_parts[0]))
 
 # Directory setup
-output_directory = 'output'
-samples_directory = '/Users/zeke/Documents/Github/BoominAI/smaller'
+output_directory = 'output_full'
+samples_directory = '/Users/zeke/Documents/Github/BoominAI/training_data_new'
 # samples_directory = '/Users/zeke/Documents/Github/WaysteAI/raw'
 
 # Check if the output directory exists, if not, create it
@@ -84,10 +79,8 @@ if not os.path.exists(output_directory):
 for file_name in os.listdir(samples_directory):
     if file_name.endswith('.wav') or file_name.endswith('.mp3'):
         file_path = os.path.join(samples_directory, file_name)
-        process_audio(file_path, output_directory, segment_length=30)
-
-# Directory where the WAV files are saved
-output_directory = 'output'
+        if "type beat" in file_name:
+            process_audio(file_path, output_directory, segment_length=30)
 
 # Iterate through the files in the directory
 for file_name in os.listdir(output_directory):

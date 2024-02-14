@@ -1,2 +1,3 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+splitter separate /Users/zeke/Documents/Github/BoominAI/Drake-type-rap-beat-97046353060882831877.wav -o /Users/zeke/Documents/Github/BoominAI/vocal-remover1
