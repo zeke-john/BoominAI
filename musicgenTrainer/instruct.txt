@@ -8,8 +8,12 @@
 !pip install wandb pydu boto3
 !export PYTHONIOENCODING=utf-8
 
-import boto3
 import os
+directory = "local_directory/smaller"
+os.makedirs(directory, exist_ok=True)
+
+
+import boto3
 from concurrent.futures import ThreadPoolExecutor
 import concurrent.futures
 
