@@ -1,4 +1,5 @@
 # Configuration for Cog ⚙️
+# arch -arm64 /usr/local/bin/cog predict -i input_text="type beat" -i duration=100 -i extend_stride=29 -i temperature=0.75
 # Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
 
 build:
