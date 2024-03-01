@@ -314,3 +314,4 @@ cython_debug/
 /serverless
 /MODELS
 /replicate-test/NEWMODEL.pt
+/aws-sagemaker

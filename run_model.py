@@ -27,10 +27,10 @@ os.environ['AWS_SECRET_ACCESS_KEY'] = 'L4FpDNOvrjrgTCwGr8pzyo07LDxJ9Jog3z0sdVnq'
 model = musicgen.MusicGen.get_pretrained('facebook/musicgen-medium', device='cuda')
 model.lm.load_state_dict(torch.load('NEW_MODEL.pt'))
 
-
 def upload_to_s3(local_file_path, bucket_name, s3_key):
     s3 = boto3.client('s3', aws_access_key_id="AKIA2J37CALYGP54WYS7", aws_secret_access_key="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")
     s3.upload_file(local_file_path, bucket_name, s3_key)
+
 
 def process_input(input, duration, extend_stride, temperature):
     prompt = input.lower()
