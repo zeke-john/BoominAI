@@ -6,7 +6,6 @@ from audiocraft.data.audio import audio_write
 from audiocraft.models import musicgen
 import torch
 import random
-import spleeter
 import subprocess
 import os
 import boto3
@@ -18,7 +17,7 @@ class MusicGeneratorPredictor(BasePredictor):
         """Load the pre-trained model into memory"""
         os.environ['AWS_ACCESS_KEY_ID'] = 'AKIA2J37CALYGP54WYS7'
         os.environ['AWS_SECRET_ACCESS_KEY'] = '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'
-        self.model = musicgen.MusicGen.get_pretrained('facebook/musicgen-medium', device='cuda')
+        self.model = musicgen.MusicGen.get_pretrained('facebook/musicgen-medium', device='cpu')
         self.model.lm.load_state_dict(torch.load('NEW_MODEL.pt'))
         
     def predict(
@@ -53,6 +52,19 @@ class MusicGeneratorPredictor(BasePredictor):
             # GET STEMS OF THE BEAT (BASS, DRUMS, SYNTHS)
             get_stems = f"spleeter separate -o output -p spleeter:4stems-16kHz {local_file_path}"
             subprocess.run(get_stems, shell=True)
+
+
+            import subprocess
+
+            # Execute 'ls' command
+            ls_output = subprocess.run(['ls'], capture_output=True, text=True)
+            print("Contents of current directory:")
+            print(ls_output.stdout)
+
+            # Execute 'pwd' command
+            pwd_output = subprocess.run(['pwd'], capture_output=True, text=True)
+            print("\nCurrent working directory:")
+            print(pwd_output.stdout)
 
             bass = f"./output/{file_name}/bass.wav"
             drums = f"./output/{file_name}/drums.wav"

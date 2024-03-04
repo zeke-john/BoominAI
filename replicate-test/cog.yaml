@@ -8,20 +8,14 @@ build:
 
     system_packages:
         - 'ffmpeg'
-    python_version: '3.10'
+
+    python_version: '3.9'
+
     # a list of packages in the format <package-name>==<version>
     python_packages:
-        - 'typer==0.4.1'
-        - 'PyYAML'
-        - 'numpy'
-        - 'setuptools'
-        - 'flashy'
         - 'git+https://github.com/facebookresearch/audiocraft.git'
-        - 'wandb'
-        - 'pydu'
         - 'boto3'
         - 'awscli'
-        - 'spleeter'
 
     # commands run after the environment is setup
     run:

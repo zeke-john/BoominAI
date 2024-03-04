@@ -1,38 +1,38 @@
-# !python3 -m pip install -U git+https://github.com/facebookresearch/audiocraft.git
-# !pip install wandb pydu boto3
-# !pip install --no-cache-dir runpod 
-# !pip install awscli --force-reinstall --upgrade
-# !python3 -m pip install spleeter
-
-# !export PYTHONIOENCODING=utf-8
-
-# !apt-get update && apt-get install -y ffmpeg
-# !AWS_ACCESS_KEY_ID=AKIA2J37CALYGP54WYS7 AWS_SECRET_ACCESS_KEY=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 aws s3 sync s3://jubbamodel/ ./
+import subprocess
+subprocess.run(['apt-get', 'update'])
+subprocess.run(['apt-get', 'install', '-y', 'ffmpeg'])
 
 from audiocraft.data.audio import audio_write
 from audiocraft.models import musicgen
 import torch
 import random
 import spleeter
-import subprocess
 import os
 import boto3
 from botocore import client
 import re
+
+os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 # Set AWS credentials as environment variables
 os.environ['AWS_ACCESS_KEY_ID'] = 'AKIA2J37CALYGP54WYS7'
 os.environ['AWS_SECRET_ACCESS_KEY'] = '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'
 
 model = musicgen.MusicGen.get_pretrained('facebook/musicgen-medium', device='cuda')
-model.lm.load_state_dict(torch.load('NEW_MODEL.pt'))
+model.lm.load_state_dict(torch.load('model/model.pt'))
 
 def upload_to_s3(local_file_path, bucket_name, s3_key):
     s3 = boto3.client('s3', aws_access_key_id="AKIA2J37CALYGP54WYS7", aws_secret_access_key="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")
     s3.upload_file(local_file_path, bucket_name, s3_key)
 
 
-def process_input(input, duration, extend_stride, temperature):
+def process_input(data):
+
+    input = data["type"]
+    duration = data["duration"]
+    extend_stride = data["extend_stride"]
+    temperature = data["temperature"]
+
     prompt = input.lower()
 
     model.set_generation_params(duration=duration, extend_stride=extend_stride, temperature=temperature)
@@ -103,7 +103,13 @@ def process_input(input, duration, extend_stride, temperature):
                 }
 
 
+    return {'Output': full_res}
 
-    return full_res
+data = {
+  "prompt": "jazz solo",
+  "duration": 120,
+  "extend_stride": 29,
+  "temperature": 0.75
+}
 
-process_input('type beat', duration=120, extend_stride=29, temperature=0.75)
+output = process_input(data)
