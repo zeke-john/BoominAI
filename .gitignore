@@ -315,3 +315,4 @@ cython_debug/
 /MODELS
 /replicate-test/NEWMODEL.pt
 /aws-sagemaker
+/modal/NEW_MODEL.pt
